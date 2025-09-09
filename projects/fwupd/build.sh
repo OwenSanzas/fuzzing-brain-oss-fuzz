@@ -15,4 +15,5 @@
 #
 ################################################################################
 
-python3 fwupd/contrib/ci/oss-fuzz.py
+cd "$SRC/fwupd"
+python3 contrib/ci/oss-fuzz.py
