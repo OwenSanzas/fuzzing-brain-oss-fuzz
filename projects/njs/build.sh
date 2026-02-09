@@ -56,3 +56,46 @@ set -x
 
 zip -q $SEED_CORPUS_PATH.zip $SEED_CORPUS_PATH
 rm -rf $SEED_CORPUS_PATH
+
+# Common link flags for additional fuzzers
+NJS_LINK_LIBS="-lm -L/usr/local/lib -Wl,-Bstatic -lpcre2-8 -Wl,-Bdynamic -lcrypto -lxml2 -lz"
+
+# Build fuzz_webcrypto - targets WebCrypto API
+$CC $CFLAGS -Isrc -Iexternal -Ibuild \
+    -I/usr/local/include \
+    -c $SRC/fuzz_webcrypto.c \
+    -o build/fuzz_webcrypto.o
+
+$CXX $CXXFLAGS \
+    build/fuzz_webcrypto.o \
+    build/libnjs.a \
+    $LIB_FUZZING_ENGINE \
+    $NJS_LINK_LIBS \
+    -o $OUT/fuzz_webcrypto
+
+# Build fuzz_xml - targets XML module (libxml2)
+$CC $CFLAGS -Isrc -Iexternal -Ibuild \
+    -I/usr/local/include \
+    $(pkg-config --cflags libxml-2.0 2>/dev/null || echo "-I/usr/include/libxml2") \
+    -c $SRC/fuzz_xml.c \
+    -o build/fuzz_xml.o
+
+$CXX $CXXFLAGS \
+    build/fuzz_xml.o \
+    build/libnjs.a \
+    $LIB_FUZZING_ENGINE \
+    $NJS_LINK_LIBS \
+    -o $OUT/fuzz_xml
+
+# Build fuzz_zlib - targets zlib module
+$CC $CFLAGS -Isrc -Iexternal -Ibuild \
+    -I/usr/local/include \
+    -c $SRC/fuzz_zlib.c \
+    -o build/fuzz_zlib.o
+
+$CXX $CXXFLAGS \
+    build/fuzz_zlib.o \
+    build/libnjs.a \
+    $LIB_FUZZING_ENGINE \
+    $NJS_LINK_LIBS \
+    -o $OUT/fuzz_zlib
